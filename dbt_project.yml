@@ -40,3 +40,9 @@ models:
     # Applies to all files under models/example/
     example:
       +materialized: table
+
+vars:
+  accepted_txn_types: ['deposit','withdraw','payment','transfer']
+  accepted_txn_statuses: ['pending','cleared','reversed']
+  scd_open_end_ts: '9999-12-31 23:59:59'
+  banking_snapshot_schema: 'snapshots'

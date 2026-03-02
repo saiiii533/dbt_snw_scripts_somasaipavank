@@ -1,5 +1,5 @@
 txn_id,account_number,txn_date,amount,txn_type,txn_status
-T101,A107,2025-01-15,1186.17,payment,cleared
+T101,A107,2025-01-15,1186.17,withdraw,cleared
 T102,A105,2025-01-19,-1375.93,payment,pending
 T103,A108,2025-01-08,-665.17,transfer,cleared
 T104,A105,2025-01-12,1879.64,withdraw,cleared

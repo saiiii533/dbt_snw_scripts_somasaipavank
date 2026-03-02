@@ -1,0 +1,50 @@
+models:
+  - name: dim_account
+    description: 'DIMENSION TABLE FROM STAGE ACCOUNT'
+    columns:
+      - name: account_sk
+        tests:
+          - unique
+          - not_null
+      - name: account_sk
+        description: "Surrogate key for account, generated from account_number." 
+      - name: account_number
+        description: "Natural key identifying the account."
+      - name: customer_id
+        description: "store customer unique key"
+      - name: account_type
+        description: "whisch account type savings or current"
+      - name: created_at
+        description: "when it was created"
+      - name: updated_at
+        description: "when it was updated"
+
+  - name: fct_transactions
+    description: 'FACT TABLE DERIVED FROM DIMENSION'
+    columns:
+      - name: txn_id
+        tests:
+        - unique
+        - not_null
+        description: "transaction id "
+      - name: txn_type 
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['deposit', 'withdraw', 'payment', 'transfer']
+                severity: warn
+        description: "transaction type for payments "
+      - name: txn_status 
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['pending', 'cleared', 'reversed']
+        description: "which all are gonna accept the value"
+        
+      - name: account_sk 
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_sk
+        description: "surrogate key for account number"     

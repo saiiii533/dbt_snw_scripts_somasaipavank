@@ -1,0 +1,46 @@
+version: 2 
+
+
+sources:
+
+  - name: banking
+    description: "Raw banking data ingested from operational systems."
+    database: SOMA_DBT_TRAINING
+    schema: SOMA_DBT_TRAINING_SC
+
+    tables:
+      - name: bank_accounts
+        description: "Core customer account records including account metadata and current balance."
+        columns:
+          - name: account_number
+            tests:
+            - not_null
+            description: "Unique identifier for the bank account. Primary key in source system."
+          - name: customer_id
+            description: "Identifier of the customer who owns this account. Foreign key to customer dimension."
+          - name: account_type
+            description: "Type of account "
+          - name: open_date
+            description: "Date the account was opened. Format: YYYY-MM-DD."
+          - name: balance
+            description: "Current available balance in the account. Can be negative for credit/loan accounts."
+
+      - name: bank_transactions
+        description: "Transactional records representing movements of funds in and out of accounts."
+        columns:
+          - name: txn_id
+            tests:
+            - unique
+            - not_null
+          
+            description: "Unique identifier for the transaction. Primary key in source system."
+          - name: account_number
+            description: "Account number associated with this transaction. Links to bank_accounts."
+          - name: txn_date
+            description: "Date and time when the transaction occurred."
+          - name: amount
+            description: "Monetary value of the transaction.."
+          - name: txn_type
+            description: "Business category of transaction ."
+          - name: txn_status
+            description: "Status of the transaction ."

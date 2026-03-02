@@ -2,63 +2,52 @@
     config(
         materialized='incremental',
         unique_key='txn_id',
-        incremental_strategy = 'merge'
-
+        incremental_strategy='merge'
     )
 }}
 
-{% if is_incremental() %}
+with src as (
 
-with new_recs as (
-    select 
-        md5(account_number) as account_sk,
-        account_number,
+    select
         txn_id,
+        account_number,
         txn_type,
-        txn_status,
-        current_date as created_at,
-        null as updated_at
-    from 
-        {{ref('stg_transactions')}} 
-    where
-        account_number not in (select account_number from {{this}})
+        txn_status
+    from {{ ref('stg_transactions') }}
+
+),
+
+dim_join as (
+
+    select
+        md5(src.txn_id) as txn_sk,
+        src.txn_id,
+        dim.account_sk,
+        src.txn_type,
+        src.txn_status
+    from src
+    left join {{ ref('dim_account') }} dim
+        on src.account_number = dim.account_number
 )
 
-,update_recs as (
-    select 
-        md5(account_number) as account_sk,
-        src.account_number,
-        src.txn_id,
-        src.txn_type,
-        src.txn_status,
-        src.created_at,
-        current_timestamp() as updated_at 
-    from 
-        {{ref('stg_transactions')}} src left join {{this}} tgt
-    on
-        src.account_number = tgt.account_number
-    where
-        src.txn_status <> tgt.txn_status 
-)
+select
+    s.txn_sk,
+    s.txn_id,
+    s.account_sk,
+    s.txn_type,
+    s.txn_status,
 
-select * from update_recs
-union
-select * from new_recs
+    {% if is_incremental() %}
+        coalesce(t.created_at, current_timestamp()) as created_at,
+    {% else %}
+        current_timestamp() as created_at,
+    {% endif %}
 
+    current_timestamp() as updated_at
 
-{% else %}
+from dim_join s
 
-select 
-        md5(src.account_number) as account_sk,
-        src.account_number,
-        src.txn_id,
-        src.txn_type,
-        src.txn_status,
-        current_date as created_at,
-    null as updated_at
-from 
-    {{ref('stg_transactions')}} src
-    join {{ ref('dim_account') }} dim
-    on src.account_number = dim.account_number
-
+{% if is_incremental() %}
+left join {{ this }} t
+    on s.txn_id = t.txn_id
 {% endif %}

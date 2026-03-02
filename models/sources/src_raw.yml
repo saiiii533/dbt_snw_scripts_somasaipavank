@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    database: SOMA_DBT_TRAINING
+    schema: SOMA_DBT_TRAINING_SC
+    tables:
+      - name: raw_transactions_p1
+      - name: raw_transactions_p2
